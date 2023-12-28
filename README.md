@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Next.js Javascript / Stripe Webhooks Bug
 
-## Getting Started
+I'm about to throw my computer out of the window, but some level of self-preservation has caused me to feel that making a repo to document the behavior might be a better way to use this frustrated energy.
 
-First, run the development server:
+### There are 2 potential outcomes:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. I am an idiot, and I'm missing something. The reason it's not working is my fault
+2. There is a flaw in the way Next.js apps run (when NOT using typescript) that causes what I'm trying to do to be impossible.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Steps to reproduce:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. git clone https://github.com/dirtybirdnj/next-stripe-webhooks-bug.git
+2. .env.default => .env (populate with stripe keys)
+3. yarn
+4. yarn dev
+5. stripe login
+6. stripe listen --forward-to localhost:3000/api/webhooks/stripe
+7. stripe trigger checkout.session.completed
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## What I expect to happen:
 
-## Learn More
+I should be able to access the raw http request / buffer to pass to the stripe webhook validation that is ~~bullshit unhelpful waste of time fucking pointless~~ important and necessary security functionality.
 
-To learn more about Next.js, take a look at the following resources:
+## What actually happens
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+No matter what libraries I use, I cannot get this signature stuff to work. Every example I see uses Typescript, which forces the req / res params passed to be... something else than NextApiRequest / NextApiRequest.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+`StripeSignatureVerificationError: No signatures found matching the expected signature for payload. Are you passing the raw request body you received from Stripe?`
 
-## Deploy on Vercel
+Yes, yes I am. I have been for two days. I'm so angry at this error that I made a repo just to document what's broken.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Please, please help me feel stupid. Show me what's missing. I just want it to work.

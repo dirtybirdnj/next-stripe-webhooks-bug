@@ -27,6 +27,12 @@ No matter what libraries I use, I cannot get this signature stuff to work. Every
 
 `StripeSignatureVerificationError: No signatures found matching the expected signature for payload. Are you passing the raw request body you received from Stripe?`
 
-Yes, yes I am. I have been for two days. I'm so angry at this error that I made a repo just to document what's broken.
+I think I am, but I'm probbably not, because Next.js is "helpfully" parsing the req in a way that makes the stripe.webhooks.constructEvent **LITERALLY IMPOSSIBLE**
 
-Please, please help me feel stupid. Show me what's missing. I just want it to work.
+Is this even having an effect?
+
+```export const config = {
+  api: {
+    bodyParser: false,
+  },
+};```

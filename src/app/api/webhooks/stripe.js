@@ -4,15 +4,12 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
 });
 
 // Disable next.js body parsing (stripe needs the raw body to validate the event)
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 const handleStripeWebhook = async (req, res) => {
+  console.log('why')
   const headers = req.headers;
-
+  console.log('try')
   try {
     const rawBody = await getRawBody(req);
     //const body = await req.text();
@@ -62,11 +59,13 @@ const handleStripeWebhook = async (req, res) => {
 
     // Send success response
     res.send({ status: "success" });
+    return
   } catch (error) {
     console.log("stripe webhook error", error);
 
     // Send error response
     res.send({ status: "error", code: error.code, message: error.message });
+    return
   }
 };
 

@@ -5,11 +5,11 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 export async function POST(req) {
 
@@ -18,10 +18,13 @@ export async function POST(req) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   try {
-    // Use the built-in req.body to get the raw buffer
-    //const rawBody = request.body;
-    //const rawBody = request.text()
-    const rawBody = await buffer(request);
+    // All these attempts to read the RAW UNMOFIFIED body fail
+    //Next.js is UNHELPFULLY modifying it
+    //Rendering stripe webhook validation IMPOSSIBLE
+    //const rawBody = request.body; //fail
+    //const rawBody = request.text() //fail
+    //const rawBody = await buffer(request); //fail
+    const rawBody = request.json(); //fail
 
     const stripeEvent = stripe.webhooks.constructEvent(
       rawBody,

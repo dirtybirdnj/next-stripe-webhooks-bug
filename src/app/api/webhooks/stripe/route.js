@@ -1,45 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { buffer } from 'micro';
+const Stripe = require('stripe');
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2020-08-27'
 });
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// export const config = {
-//   api: {
-//     bodyParser: false,
-//   },
-// };
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
 
-export async function POST(req) {
+export async function POST(req, res){
+    if (req.method === "POST") {
 
-  const request = new NextRequest(req);
-  const header = request.headers.get('stripe-signature');
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        const body = await req.text();
+        const sig = req.headers["stripe-signature"];
 
-  try {
-    // All these attempts to read the RAW UNMOFIFIED body fail
-    //Next.js is UNHELPFULLY modifying it
-    //Rendering stripe webhook validation IMPOSSIBLE
-    //const rawBody = request.body; //fail
-    //const rawBody = request.text() //fail
-    //const rawBody = await buffer(request); //fail
-    const rawBody = request.json(); //fail
+        let stripeEvent;
 
-    const stripeEvent = stripe.webhooks.constructEvent(
-      rawBody,
-      header,
-      webhookSecret
-    );
+        try {
+            stripeEvent = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+            console.log( 'stripeEvent', stripeEvent );
+        } catch (err) {
+            res.status(400).send(`Webhook Error: ${err.message}`);
+            return;
+        }
 
-    return NextResponse.json(stripeEvent, {
-      status: 200,
-    });
-  } catch (error) {
-    console.log('Error handling POST request:', error);
+        if ( 'checkout.session.completed' === stripeEvent.type ) {
+            const session = stripeEvent.data.object;
+            console.log( 'payment success', session );
+            res.status(200).send('success')
+        }
 
-    return NextResponse.json({ status: 'error', message: error.message }, {
-      status: 500,
-    });
-  }
-}
+        res.json({ received: true });
+    } else {
+        res.setHeader("Allow", "POST");
+        res.status(405).end("Method Not Allowed");
+    }
+};
